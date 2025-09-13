@@ -5,12 +5,14 @@ async function load_feeds()
         const feeds = [
             ["News", "https://feeds.nbcnews.com/nbcnews/public/news"],
             ["Jobs", "https://remote.co/feed"],
-        ]
+        ];
 
         const feed_list = [];
+        let key = 0;
         for (var feed of feeds)
         {
-            feed_list.push(<Feed title={feed[0]} link={feed[1]} />)
+            key += 1;
+            feed_list.push(<Feed key={key} title={feed[0]} link={feed[1]} />)
         }
     
         const container = document.getElementById('feeds');
@@ -44,9 +46,11 @@ async function Feed({title, link})
     const xmlDoc = parser.parseFromString(response.text, 'text/xml');
 
     const entries = [];
+    let key = 0;
     for (item of xmlDoc.getElementsByTagName('item'))
     {
-        entries.push( <Entry title={item.title} content="" link="" /> )
+        key += 1;
+        entries.push( <Entry key={key} title={item.title} content="" link="" /> )
     }
     return (
         <div className="feed">
