@@ -14,8 +14,8 @@ async function load_feeds()
     try
     {
         const feeds = [
-            ["News", "https://feeds.nbcnews.com/nbcnews/public/news"],
-            ["Jobs", "https://remote.co/feed"],
+            ["News", "https://api.allorigins.win/raw?url=https://feeds.nbcnews.com/nbcnews/public/news"],
+            ["Jobs", "https://api.allorigins.win/raw?url=https://remote.co/feed"],
         ];
 
         const feed_list = [];
@@ -54,7 +54,7 @@ async function Feed({title, link})
     }
 
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(response.text, 'text/xml');
+    const xmlDoc = parser.parseFromString(await response.text, 'text/xml');
 
     const entries = [];
     let key = 0;
