@@ -1,0 +1,124 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script defer type="text/babel">
+        {% raw %}
+        const { useState, useEffect } = React;
+
+        function Entry({ title, link }) {
+            return (
+                    <a className="entry" href={link} target="_blank" rel="noopener noreferrer">{title}</a>
+            );
+        }
+
+        function Feed({ title, apiUrl }) {
+            const [entries, setEntries] = useState([]);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                async function fetchFeed() {
+                    try {
+                        const response = await fetch(`/api/feed?url=${encodeURIComponent(apiUrl)}`);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch feed: ${response.status}`);
+                        }
+                        const data = await response.json();
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        setEntries(data);
+                    } catch (err) {
+                        setError(err.message);
+                    }
+                }
+                fetchFeed();
+            }, [apiUrl]);
+
+            if (error) {
+                return <div>Error loading feed: {error}</div>;
+            }
+
+            return (
+                <div className="feed">
+                    <h3>{title}</h3>
+                    <div>
+                        <div>
+                    {entries.map((entry, index) => (
+                        <Entry key={index} title={entry.title} link={entry.link} />
+                    ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [text, setText] = React.useState(""); // State to hold the value of the textarea
+
+            const handleChange = (event) => {
+                setText(event.target.value); // Update the state when the textarea value changes
+            };
+
+            const feeds = [
+                ["News", "https://feeds.nbcnews.com/nbcnews/public/news"],
+                ["Jobs", "https://weworkremotely.com/categories/remote-full-stack-programming-jobs.rss"],
+            ];
+
+            return (
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-around" }}>
+                    {feeds.map(([title, link], index) => (
+                        <Feed key={index} title={title} apiUrl={link} />
+                    ))}
+                    <div className="feed">
+                        <h3>ToDo</h3>
+                        <div>
+                            <div style={{overflow: "hidden"}}>
+                                <textarea
+                                    name="notes"
+                                    id="notes"
+                                    value={(() => {
+                                        try {
+                                            return decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)notes\s*\=\s*([^;]*).*$)|^.*$/, "$1"));
+                                        } catch {
+                                            return "";
+                                        }
+                                    })()}
+                                    onChange={e => {
+                                        const value = e.target.value;
+                                        document.cookie = "notes=" + encodeURIComponent(value) + "; path=/";
+                                        e.target.value = value;
+                                    }}
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const container = document.getElementById('feeds');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+        {% endraw %}
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center;">
+        <div style="padding: 50px; width: 50%; position: relative;">
+            <div style="position: absolute; top: 60px; left: 60px; width: 50px; height: 50px; padding:5px; pointer-events: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="gray" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>
+            </div>
+            <input id="search" type="text" placeholder="Search" autofocus>
+        </div>
+        <div id="feeds" style="flex: 1; width: 100%; display: flex; flex-direction: row; flex-wrap: wrap;">
+        </div>
+    </div>
+</body>
+</html>
